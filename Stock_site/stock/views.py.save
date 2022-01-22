@@ -1,0 +1,54 @@
+from django.shortcuts import render
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login, logout
+# Create your views here.
+
+
+class Login(View):
+	def get(self,request):
+		return render(request,'base/login.html',{})
+
+	def post(self,request):
+		user = authenticate(username=request.POST.get('username'),password=request.POST.get('password'))
+		if user:
+			return HttpResponseRedirect("/home")
+		else:
+			return render(request,'base/login.hmtl',{"error":"User Credentials not valid"})
+
+
+class SignUp(View):
+	def get(self,request):
+		return render(request,'base/signup.html',{})
+
+	def post(self,request):
+
+		username = request.POST.get('username')
+		password = request.POST.get('password')
+		email = request.POST.get('email')
+		first_name = request.POST.get('first_name')
+		last_name = request.POST.get('last_name')
+
+		User.objects.create_user(username=username , password = passwrod, email = email , last_name = last_name , first_name=first_name)
+
+		return render(request,'base/login.html', {})
+
+class Listings(View):
+	def get(self,request)
+		if request.user.is_authenticated:
+			req_stocks = stocks.objects.filter(created_for = request.user).order_by('-id')[:5]
+
+			return render(request,'base/home.html',{'data':req_stocks,'login':1})
+		else:
+
+			req_stocks = stocks.objects.all().order_by('-id')[:5]
+
+			return render(request,'base/home.html',{'data':req_stocks,'login':0}
+	def post(self,request):
+		last_val = request.data['last_val']
+		if request.user.is_authenticated:
+			req_stocks = stocks.objects.filter(created_for = request.user).order_by('-id')[last_val:last_val+5]
+
+		else:
+			req_stocks = stocks.objects.all().order_by('-id')[last_val:last_val+5]
+
+		return JsonResponse({'data':req_stocks})

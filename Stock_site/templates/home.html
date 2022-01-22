@@ -1,0 +1,195 @@
+
+{% load static %}
+{% block body %}
+<html lang="en">
+    <head>
+    
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="{% static 'fonts/font-awesome-4.7.0/css/font-awesome.min.css' %}">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="{% static 'fonts/Linearicons-Free-v1.0.0/icon-font.min.css' %}">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="{% static 'vendor/animate/animate.css' %}">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="{% static 'vendor/css-hamburgers/hamburgers.min.css' %}">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="{% static 'vendor/animsition/css/animsition.min.css' %}">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="{% static 'vendor/select2/select2.min.css' %}">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="{% static 'vendor/daterangepicker/daterangepicker.css' %}">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/util.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+        
+        <style>
+            .bb {
+                margin-left: 20px;
+                margin-right: 20px;
+                text-align: center;
+                width: 10%;
+            }
+        </style>
+    <title>Stock List</title>
+    </head>
+    <body onload = login_check()>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="#">Stocks</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+          
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+              <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                  <a class="nav-link" href="/home/">Home <span class="sr-only">(current)</span></a>
+                </li>
+                {% if user.is_authenticated%}
+                <li class="nav-item">
+                  <a class="nav-link" href="/logout/">Logout</a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="/create_listing/">Add New Stock</a>
+                  </li>
+                {%else%}
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Login</a>
+                  </li>
+                {%endif%}
+                
+              </ul>
+              <form class="form-inline my-2 my-lg-0">
+                <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+              </form>
+            </div>
+          </nav>     
+        <div class="modal" id="information">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="heading"></h4>
+                        <button class="close" data-dismiss="modal" type="button">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="modalbody" style="color:black"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-dismiss="modal" type="button">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {{message1}}
+    {% if message %}
+        <ul class="messages">
+                <li  {% if message.tags %} class=" {{ message.tags }} " {% endif %}> {{ message1 }} </li>
+        </ul>
+    {% endif %}
+    {% if data %}
+    <div class="container">
+        <h2>Stock List</h2>
+        <table id="example" class="table table-striped table-bordered" style="width:100%">
+            <thead>
+            <tr>
+                
+                
+                <th>Stock Name</th>
+                <th>Price</th>
+                <th>View</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for dc in  data %}
+                <tr>
+                    
+                    
+                    <td>{{ dc.stock_name }}</td>
+                    <td>{{ dc.price }}</td>
+                    <td><a href="/post/?id={{ dc.id }}" class="btn btn-primary">{{ dc.id }}</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        
+            <button type="button" class="btn btn-primary" id="load-more" onclick="update_table()" >Load More</button>
+        
+    </div>
+    {% endif %}
+    <div class="modal" id="information">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="heading"></h4>
+                    <button class="close" data-dismiss="modal" type="button">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p id="modalbody" style="color:black"></p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-dismiss="modal" type="button">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+  <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<script>
+   function update_table() {  
+        var input = "{{data}}";
+        
+        var last = input[input.length - 1];
+        
+        $.ajax({
+            url: '/home/',
+            type: "POST",
+            data: {
+                "last_val": last.id,
+                
+                'csrfmiddlewaretoken': '{{ csrf_token }}',
+            },
+            success: function (vals) {
+            for (var j = 0, l = 5; j < l; j ++) {
+                var table = document.getElementById("example");
+                var row = table.insertRow(-1);
+                
+                var cell1 = row.insertCell(1);
+                var cell2 = row.insertCell(2);
+                var cell3 = row.insertCell(3);
+                cell1.innerHTML = vals[x].stock_name;
+                cell2.innerHTML = vals[x].price;
+                cell3.innerHTML=  '<a href="post/?id='+vals[x].id+' class="btn-link">'+vals[x].id+'</a>';
+              }
+            }
+               
+        });
+    }
+</script>
+<script>
+    var idleInterval = setInterval(timerIncrement, 180000); // 3 minute
+        idleTime = 0;
+
+        function timerIncrement() {
+            idleTime = idleTime + 1;
+            if (idleTime > 1) { // 3 minutes
+                login_check(idleTime);
+            }
+        }
+        function login_check() {
+            if ("{{login}}" == '0'){
+                $("#information").modal('show');
+                $('#heading').html("Information");
+                $('#modalbody').html("please login or sign up to continue");
+            }
+        }
+            
+</script>
+
+</html>
+{% endblock %}
